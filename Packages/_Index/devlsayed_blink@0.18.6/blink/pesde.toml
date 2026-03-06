@@ -1,0 +1,18 @@
+authors = ["1axen"]
+description = "An IDL compiler written in Luau for ROBLOX buffer networking"
+includes = [
+    "README.md",
+    "pesde.toml",
+    "release/blink_pesde.luau",
+]
+license = "MIT"
+name = "1axen/blink"
+repository = "https://github.com/1axen/blink"
+version = "0.18.6"
+
+[indices]
+default = "https://github.com/pesde-pkg/index"
+
+[target]
+bin = "release/blink_pesde.luau"
+environment = "lune"

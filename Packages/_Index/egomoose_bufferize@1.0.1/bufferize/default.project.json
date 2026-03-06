@@ -1,0 +1,9 @@
+{
+  "name": "bufferize",
+  "tree": {
+    "$path": "src",
+    "Wally": {
+      "$path": "wally.toml"
+    }
+  }
+}

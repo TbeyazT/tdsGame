@@ -1,0 +1,17 @@
+[package]
+name = "egomoose/bufferize"
+description = "A tool to losslessly encode / decode roblox data types to buffers."
+repository = "https://github.com/EgoMoose/rbx-bufferize"
+version = "1.0.1"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+license = "MIT"
+exclude = ["**"]
+include = ["src", "src/**", "wally.toml", "wally.lock", "default.project.json", "LICENSE"]
+
+[dependencies]
+CargoSemver = "tim7775/cargo-semver@1.0.20"
+
+[dev-dependencies]
+Jest = "jsdotlua/jest@3.10.0"
+JestGlobals = "jsdotlua/jest-globals@3.10.0"
