@@ -1,0 +1,11 @@
+{
+  "aliases": {
+    "Shared": "src/Shared",
+    "Controllers": "src/Shared/Services",
+    "Services": "src/ServerScriptService/Services",
+    "Classes": "src/Shared/Classes",
+    "Components": "src/Shared/Components",
+    "Modules": "src/Shared/Modules",
+    "Pckgs": "Packages"
+  }
+}

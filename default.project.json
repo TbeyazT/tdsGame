@@ -1,5 +1,5 @@
 {
-  "name": "gun test",
+  "name": "fat project",
   "tree": {
     "$className": "DataModel",
     "ReplicatedStorage": {
@@ -8,7 +8,12 @@
       "$path": "src/ReplicatedStorage",
       "Packages":  {
 			  "$path": "Packages"
-		  }
+		  },
+      "Shared": {
+        "$className": "Folder",
+        "$ignoreUnknownInstances": true,
+        "$path": "src/Shared"
+      }
     },
     "ServerScriptService": {
       "$className": "ServerScriptService",

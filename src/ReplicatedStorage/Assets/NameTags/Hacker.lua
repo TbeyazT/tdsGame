@@ -10,6 +10,7 @@ local ReplicatedStorage 	= game:GetService("ReplicatedStorage")
 local Packages = ReplicatedStorage:WaitForChild("Packages")
 local Assets   = ReplicatedStorage:WaitForChild("Assets")
 
+
 local RichTextComponent = require(Assets.Components.LabelComponent)
 
 local module = {}

@@ -1,3 +1,0 @@
-option RemoteScope = "Package"
-option ClientOutput = "../../Network/ClientPackage.luau"
-option ServerOutput = "../../Network/ServerPackage.luau"

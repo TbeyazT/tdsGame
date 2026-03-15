@@ -1,7 +1,0 @@
-option ClientOutput = "../../Network/ClientImports.luau"
-option ServerOutput = "../../Network/ServerImports.luau"
-
-import "./Generics.blink"
-import "./Generics.blink" as Example
-import "./Sub-Sources/Source.blink"
-import "./Sub-Sources/Source2.blink"
