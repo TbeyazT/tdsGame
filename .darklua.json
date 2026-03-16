@@ -1,0 +1,21 @@
+{
+  "rules": [
+    {
+      "rule": "convert_require",
+      "current": {
+        "name": "path",
+        "sources": {
+          "@Shared": "src/Shared",
+          "@SSS": "src/ServerScriptService",
+          "@Controllers": "src/Shared/Services",
+          "@Services": "src/ServerScriptService/Services",
+          "@Classes": "src/Shared/Classes",
+          "@Components": "src/Shared/Components",
+          "@Modules": "src/Shared/Modules",
+          "@Pckgs": "Packages"
+        }
+      },
+      "target": "roblox"
+    }
+  ]
+}

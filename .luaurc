@@ -1,6 +1,7 @@
 {
   "aliases": {
     "Shared": "src/Shared",
+    "SSS": "src/ServerScriptService",
     "Controllers": "src/Shared/Services",
     "Services": "src/ServerScriptService/Services",
     "Classes": "src/Shared/Classes",

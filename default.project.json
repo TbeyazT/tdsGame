@@ -12,30 +12,20 @@
       "Shared": {
         "$className": "Folder",
         "$ignoreUnknownInstances": true,
-        "$path": "src/Shared"
+        "$path": "out/Shared"
       }
     },
     "ServerScriptService": {
       "$className": "ServerScriptService",
       "$ignoreUnknownInstances": true,
-      "$path": "src/ServerScriptService"
-    },
-    "ServerStorage": {
-      "$className": "ServerStorage",
-      "$ignoreUnknownInstances": true,
-      "$path": "src/ServerStorage"
-    },
-    "StarterGui": {
-      "$className": "StarterGui",
-      "$ignoreUnknownInstances": true,
-      "$path": "src/StarterGui"
+      "$path": "out/ServerScriptService"
     },
     "StarterPlayer": {
       "$className": "StarterPlayer",
       "StarterPlayerScripts": {
         "$className": "StarterPlayerScripts",
         "$ignoreUnknownInstances": true,
-        "$path": "src/StarterPlayer/StarterPlayerScripts"
+        "$path": "out/StarterPlayer/StarterPlayerScripts"
       },
       "$ignoreUnknownInstances": true
     }
