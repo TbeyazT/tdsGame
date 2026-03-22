@@ -9,15 +9,10 @@ debug.setmemorycategory(script.Name .. " Client")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--------------------------- Packages & Modules --------------------------
-local Packages = ReplicatedStorage:WaitForChild("Packages")
-local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Promise = require("@Pckgs/Promise")
+local Signal = require("@Pckgs/Signal")
 
-local Promise = require(Packages.Promise)
-local Signal = require(Packages.Signal)
-
--- Generated Zap Network module
-local Net = require(Shared.Net)
+local Net = require("@Shared/Net")
 
 -------------------------- Controller Definition --------------------------
 local ProfileClient = {

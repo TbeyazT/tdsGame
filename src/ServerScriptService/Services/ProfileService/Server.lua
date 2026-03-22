@@ -25,19 +25,10 @@ local STORE_VERSION = 2
 local DATA_TEMPLATE = {
 	Cash = 350,
 	LastLogin = 0,
-	Rebirths = 0,
-	Weights = 1,
-	BaseUpgrades = 10,
 	Daily = { Day = 1, LastClaimed = 0 }, 
-	ActiveBoosts = {},
-	Brainrots = {},
-	Inventory = {},
-	GroupRewardClaimed = false,
-	Gamepasses = {},
-	Tutorial = { Finished = false, CurrentIndex = 1 },
-	Multipliers = { 
-		Speed = 1
- 	},
+	CurrentBow = "Normal",
+	Towers = {},
+	Badges = {},
 }
 
 if RunService:IsStudio() then

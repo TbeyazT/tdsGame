@@ -46,47 +46,47 @@ funct Rebirth = {
     args: boolean,
     rets: unknown
 }
+-- Lobby stuff
 
--- enemy and stuff
-
-event CreateEnemy = {
-    from: Server,
-    type: Reliable,
-    call: ManyAsync,
-    data: struct {
-        Name: string.utf8,
-        ID: string.utf8,
-    }
-}
-
-event SyncEnemies = {
-    from: Server,
-    type: Reliable,
-    call: ManyAsync,
-    data: map { [string.utf8]: CFrame } 
-}
-
-event DestroyEnemy = {
-    from: Server,
-    type: Reliable,
-    call: ManyAsync,
-    data: string.utf8 
-}
-
-event DamageEnemy = {
+event RequestJoin = {
     from: Client,
     type: Reliable,
-    call: ManyAsync,
-    data: string.utf8 
+    call: SingleAsync,
+    data: u16,
 }
 
-event DamageEnemyClient = {
+event RequestLeave = {
+    from: Client,
+    type: Reliable,
+    call: SingleAsync,
+}
+
+event ChangeLobbySetting = {
+    from: Client,
+    type: Reliable,
+    call: SingleAsync,
+    data: struct {
+        MaxPlayers: u8,
+        Map: string.utf8,
+    }
+}
+
+event UpdateLobby = {
     from: Server,
     type: Reliable,
     call: ManyAsync,
     data: struct {
-        ID:string.utf8,
-        Damage: u32,
-        CurrentHealth: u32,
+        Lobby: u16,
+        MaxPlayers: u8,
+        Map: string.utf8,
+        Players: Instance[],
+        Leader: Instance?,
+        TimeLeft: u8?
     }
+}
+
+event StartLobby = {
+    from: Client,
+    type: Reliable,
+    call: SingleAsync
 }

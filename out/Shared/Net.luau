@@ -132,8 +132,17 @@ if not RunService:IsRunning() then
 	local noop = function() end
 	return table.freeze({
 		SendEvents = noop,
-		SyncEnemies = table.freeze({
+		UpdateLobby = table.freeze({
 			On = noop
+		}),
+		StartLobby = table.freeze({
+			Fire = noop
+		}),
+		RequestLeave = table.freeze({
+			Fire = noop
+		}),
+		RequestJoin = table.freeze({
+			Fire = noop
 		}),
 		Rebirth = table.freeze({
 			Call = noop
@@ -144,26 +153,17 @@ if not RunService:IsRunning() then
 		EditTutorial = table.freeze({
 			Call = noop
 		}),
-		DestroyEnemy = table.freeze({
-			On = noop
-		}),
 		DataUpdated = table.freeze({
 			On = noop
 		}),
 		DataLoaded = table.freeze({
 			SetCallback = noop
 		}),
-		DamageEnemyClient = table.freeze({
-			On = noop
-		}),
-		DamageEnemy = table.freeze({
-			Fire = noop
-		}),
-		CreateEnemy = table.freeze({
-			On = noop
-		}),
 		ChangeSetting = table.freeze({
 			Call = noop
+		}),
+		ChangeLobbySetting = table.freeze({
+			Fire = noop
 		}),
 	}) :: Events
 end
@@ -189,24 +189,18 @@ end
 
 RunService.Heartbeat:Connect(SendEvents)
 
-local reliable_events = table.create(10)
-local reliable_event_queue: { [number]: { any } } = table.create(10)
+local reliable_events = table.create(7)
+local reliable_event_queue: { [number]: { any } } = table.create(7)
 local function_call_id = 0
-reliable_events[4] = {}
-reliable_event_queue[4] = {}
+reliable_events[3] = {}
+reliable_event_queue[3] = {}
 reliable_event_queue[2] = {}
-reliable_events[5] = {}
-reliable_event_queue[5] = {}
 reliable_events[1] = {}
 reliable_event_queue[1] = {}
 reliable_event_queue[0] = {}
-reliable_events[6] = {}
-reliable_event_queue[6] = {}
-reliable_events[3] = {}
-reliable_event_queue[3] = {}
-reliable_event_queue[9] = table.create(255)
-reliable_event_queue[8] = table.create(255)
-reliable_event_queue[7] = table.create(255)
+reliable_event_queue[6] = table.create(255)
+reliable_event_queue[5] = table.create(255)
+reliable_event_queue[4] = table.create(255)
 reliable.OnClientEvent:Connect(function(buff, inst)
 	incoming_buff = buff
 	incoming_inst = inst
@@ -215,43 +209,50 @@ reliable.OnClientEvent:Connect(function(buff, inst)
 	local len = buffer.len(buff)
 	while incoming_read < len do
 		local id = buffer.readu8(buff, read(1))
-		if id == 4 then -- SyncEnemies
+		if id == 3 then -- UpdateLobby
 			local value
 			local bool_1 = buffer.readu8(incoming_buff, read(1))
 			value = {  }
-			if not bit32.btest(bool_1, 0b0000000000000001) then
-				for _ = 1, buffer.readu16(incoming_buff, read(2)) + 1 do
-					local key_1
-					local val_1
-					local len_1 = buffer.readu16(incoming_buff, read(2))
-					key_1 = buffer.readstring(incoming_buff, read(len_1), len_1)
-					assert(utf8.len(key_1) ~= nil, "value is not valid utf-8")
-					local pos_1 = Vector3.new(buffer.readf32(incoming_buff, read(4)), buffer.readf32(incoming_buff, read(4)), buffer.readf32(incoming_buff, read(4)))
-					local axisangle_1 = Vector3.new(buffer.readf32(incoming_buff, read(4)), buffer.readf32(incoming_buff, read(4)), buffer.readf32(incoming_buff, read(4)))
-					local angle_1 = axisangle_1.Magnitude
-					if angle_1 ~= 0 then
-						val_1 = CFrame.fromAxisAngle(axisangle_1, angle_1) + pos_1
-					else
-						val_1 = CFrame.new(pos_1)
-					end
-					value[key_1] = val_1
-				end
+			value["Lobby"] = buffer.readu16(incoming_buff, read(2))
+			value["MaxPlayers"] = buffer.readu8(incoming_buff, read(1))
+			local len_1 = buffer.readu16(incoming_buff, read(2))
+			value["Map"] = buffer.readstring(incoming_buff, read(len_1), len_1)
+			assert(utf8.len(value["Map"]) ~= nil, "value is not valid utf-8")
+			local len_2 = buffer.readu16(incoming_buff, read(2))
+			value["Players"] = table.create(len_2)
+			for i_1 = 1, len_2 do
+				local val_1
+				incoming_ipos = incoming_ipos + 1
+				val_1 = incoming_inst[incoming_ipos]
+				assert(val_1 ~= nil, "received instance is nil!")
+				value["Players"][i_1] = val_1
 			end
-			if reliable_events[4][1] then
-				for _, cb in reliable_events[4] do
+			if bit32.btest(bool_1, 0b0000000000000001) then
+				incoming_ipos = incoming_ipos + 1
+				value["Leader"] = incoming_inst[incoming_ipos]
+			else
+				value["Leader"] = nil
+			end
+			if bit32.btest(bool_1, 0b0000000000000010) then
+				value["TimeLeft"] = buffer.readu8(incoming_buff, read(1))
+			else
+				value["TimeLeft"] = nil
+			end
+			if reliable_events[3][1] then
+				for _, cb in reliable_events[3] do
 					task.spawn(cb, value)
 				end
 			else
-				table.insert(reliable_event_queue[4], value)
-				if #reliable_event_queue[4] > 64 then
-					warn(`[ZAP] {#reliable_event_queue[4]} events in queue for SyncEnemies. Did you forget to attach a listener?`)
+				table.insert(reliable_event_queue[3], value)
+				if #reliable_event_queue[3] > 64 then
+					warn(`[ZAP] {#reliable_event_queue[3]} events in queue for UpdateLobby. Did you forget to attach a listener?`)
 				end
 			end
 		elseif id == 2 then -- PlayAudio
 			local value
 			value = {  }
-			local len_2 = buffer.readu16(incoming_buff, read(2))
-			value["SoundName"] = buffer.readstring(incoming_buff, read(len_2), len_2)
+			local len_3 = buffer.readu16(incoming_buff, read(2))
+			value["SoundName"] = buffer.readstring(incoming_buff, read(len_3), len_3)
 			assert(utf8.len(value["SoundName"]) ~= nil, "value is not valid utf-8")
 			value["properties"] = {  }
 			if reliable_events[2] then
@@ -260,21 +261,6 @@ reliable.OnClientEvent:Connect(function(buff, inst)
 				table.insert(reliable_event_queue[2], value)
 				if #reliable_event_queue[2] > 64 then
 					warn(`[ZAP] {#reliable_event_queue[2]} events in queue for PlayAudio. Did you forget to attach a listener?`)
-				end
-			end
-		elseif id == 5 then -- DestroyEnemy
-			local value
-			local len_3 = buffer.readu16(incoming_buff, read(2))
-			value = buffer.readstring(incoming_buff, read(len_3), len_3)
-			assert(utf8.len(value) ~= nil, "value is not valid utf-8")
-			if reliable_events[5][1] then
-				for _, cb in reliable_events[5] do
-					task.spawn(cb, value)
-				end
-			else
-				table.insert(reliable_event_queue[5], value)
-				if #reliable_event_queue[5] > 64 then
-					warn(`[ZAP] {#reliable_event_queue[5]} events in queue for DestroyEnemy. Did you forget to attach a listener?`)
 				end
 			end
 		elseif id == 1 then -- DataUpdated
@@ -307,18 +293,18 @@ reliable.OnClientEvent:Connect(function(buff, inst)
 			if not bit32.btest(bool_3, 0b0000000000000001) then
 				for _ = 1, buffer.readu16(incoming_buff, read(2)) + 1 do
 					local bool_4 = buffer.readu8(incoming_buff, read(1))
-					local key_2
+					local key_1
 					local val_2
 					local len_5 = buffer.readu16(incoming_buff, read(2))
-					key_2 = buffer.readstring(incoming_buff, read(len_5), len_5)
-					assert(utf8.len(key_2) ~= nil, "value is not valid utf-8")
+					key_1 = buffer.readstring(incoming_buff, read(len_5), len_5)
+					assert(utf8.len(key_1) ~= nil, "value is not valid utf-8")
 					if bit32.btest(bool_4, 0b0000000000000001) then
 						incoming_ipos = incoming_ipos + 1
 						val_2 = incoming_inst[incoming_ipos]
 					else
 						val_2 = nil
 					end
-					value[key_2] = val_2
+					value[key_1] = val_2
 				end
 			end
 			if reliable_events[0] then
@@ -329,44 +315,7 @@ reliable.OnClientEvent:Connect(function(buff, inst)
 					warn(`[ZAP] {#reliable_event_queue[0]} events in queue for DataLoaded. Did you forget to attach a listener?`)
 				end
 			end
-		elseif id == 6 then -- DamageEnemyClient
-			local value
-			value = {  }
-			local len_6 = buffer.readu16(incoming_buff, read(2))
-			value["ID"] = buffer.readstring(incoming_buff, read(len_6), len_6)
-			assert(utf8.len(value["ID"]) ~= nil, "value is not valid utf-8")
-			value["Damage"] = buffer.readu32(incoming_buff, read(4))
-			value["CurrentHealth"] = buffer.readu32(incoming_buff, read(4))
-			if reliable_events[6][1] then
-				for _, cb in reliable_events[6] do
-					task.spawn(cb, value)
-				end
-			else
-				table.insert(reliable_event_queue[6], value)
-				if #reliable_event_queue[6] > 64 then
-					warn(`[ZAP] {#reliable_event_queue[6]} events in queue for DamageEnemyClient. Did you forget to attach a listener?`)
-				end
-			end
-		elseif id == 3 then -- CreateEnemy
-			local value
-			value = {  }
-			local len_7 = buffer.readu16(incoming_buff, read(2))
-			value["Name"] = buffer.readstring(incoming_buff, read(len_7), len_7)
-			assert(utf8.len(value["Name"]) ~= nil, "value is not valid utf-8")
-			local len_8 = buffer.readu16(incoming_buff, read(2))
-			value["ID"] = buffer.readstring(incoming_buff, read(len_8), len_8)
-			assert(utf8.len(value["ID"]) ~= nil, "value is not valid utf-8")
-			if reliable_events[3][1] then
-				for _, cb in reliable_events[3] do
-					task.spawn(cb, value)
-				end
-			else
-				table.insert(reliable_event_queue[3], value)
-				if #reliable_event_queue[3] > 64 then
-					warn(`[ZAP] {#reliable_event_queue[3]} events in queue for CreateEnemy. Did you forget to attach a listener?`)
-				end
-			end
-		elseif id == 9 then -- Rebirth
+		elseif id == 6 then -- Rebirth
 			local call_id = buffer.readu8(incoming_buff, read(1))
 			local value
 			local bool_5 = buffer.readu8(incoming_buff, read(1))
@@ -376,32 +325,32 @@ reliable.OnClientEvent:Connect(function(buff, inst)
 			else
 				value = nil
 			end
-			local thread = reliable_event_queue[9][call_id]
+			local thread = reliable_event_queue[6][call_id]
 			-- When using actors it's possible for multiple Zap clients to exist, but only one called the Zap remote function.
 			if thread then
 				task.spawn(thread, value)
 			end
-			reliable_event_queue[9][call_id] = nil
-		elseif id == 8 then -- EditTutorial
+			reliable_event_queue[6][call_id] = nil
+		elseif id == 5 then -- EditTutorial
 			local call_id = buffer.readu8(incoming_buff, read(1))
 			local value
-			local thread = reliable_event_queue[8][call_id]
+			local thread = reliable_event_queue[5][call_id]
 			-- When using actors it's possible for multiple Zap clients to exist, but only one called the Zap remote function.
 			if thread then
 				task.spawn(thread, value)
 			end
-			reliable_event_queue[8][call_id] = nil
-		elseif id == 7 then -- ChangeSetting
+			reliable_event_queue[5][call_id] = nil
+		elseif id == 4 then -- ChangeSetting
 			local call_id = buffer.readu8(incoming_buff, read(1))
 			local value
 			local bool_6 = buffer.readu8(incoming_buff, read(1))
 			value = bit32.btest(bool_6, 0b0000000000000001)
-			local thread = reliable_event_queue[7][call_id]
+			local thread = reliable_event_queue[4][call_id]
 			-- When using actors it's possible for multiple Zap clients to exist, but only one called the Zap remote function.
 			if thread then
 				task.spawn(thread, value)
 			end
-			reliable_event_queue[7][call_id] = nil
+			reliable_event_queue[4][call_id] = nil
 		else
 			error("Unknown event id")
 		end
@@ -412,28 +361,55 @@ table.freeze(polling_queues_unreliable)
 
 local returns = {
 	SendEvents = SendEvents,
-	SyncEnemies = {
-		On = function(Callback: (Value: ({ [(string)]: (CFrame) })) -> ())
-			table.insert(reliable_events[4], Callback)
-			for _, value in reliable_event_queue[4] do
+	UpdateLobby = {
+		On = function(Callback: (Value: ({
+			["Lobby"]: (number),
+			["MaxPlayers"]: (number),
+			["Map"]: (string),
+			["Players"]: ({ (Instance) }),
+			["Leader"]: ((Instance)?),
+			["TimeLeft"]: ((number)?),
+		})) -> ())
+			table.insert(reliable_events[3], Callback)
+			for _, value in reliable_event_queue[3] do
 				task.spawn(Callback, value)
 			end
-			reliable_event_queue[4] = {}
+			reliable_event_queue[3] = {}
 			return function()
-				table.remove(reliable_events[4], table.find(reliable_events[4], Callback))
+				table.remove(reliable_events[3], table.find(reliable_events[3], Callback))
 			end
+		end,
+	},
+	StartLobby = {
+		Fire = function()
+			alloc(1)
+			buffer.writeu8(outgoing_buff, outgoing_apos, 3)
+		end,
+	},
+	RequestLeave = {
+		Fire = function()
+			alloc(1)
+			buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+		end,
+	},
+	RequestJoin = {
+		Fire = function(Value: (number))
+			alloc(1)
+			buffer.writeu8(outgoing_buff, outgoing_apos, 0)
+			alloc(2)
+			buffer.writeu16(outgoing_buff, outgoing_apos, Value)
 		end,
 	},
 	Rebirth = {
 		Call = function(Value: (boolean)): (((unknown)))
 			function_call_id += 1
 			function_call_id %= 256
-			if reliable_event_queue[9][function_call_id] then
+			if reliable_event_queue[6][function_call_id] then
 				function_call_id -= 1
 				error("Zap has more than 256 calls awaiting a response, and therefore this packet has been dropped")
 			end
 			alloc(1)
-			buffer.writeu8(outgoing_buff, outgoing_apos, 3)
+			buffer.writeu8(outgoing_buff, outgoing_apos, 6)
 			alloc(1)
 			buffer.writeu8(outgoing_buff, outgoing_apos, function_call_id)
 			local bool_7 = 0
@@ -442,7 +418,7 @@ local returns = {
 				bool_7 = bit32.bor(bool_7, 0b0000000000000001)
 			end
 			buffer.writeu8(outgoing_buff, bool_7_pos_1, bool_7)
-			reliable_event_queue[9][function_call_id] = coroutine.running()
+			reliable_event_queue[6][function_call_id] = coroutine.running()
 			return coroutine.yield()
 		end,
 	},
@@ -469,41 +445,29 @@ local returns = {
 		}))
 			function_call_id += 1
 			function_call_id %= 256
-			if reliable_event_queue[8][function_call_id] then
+			if reliable_event_queue[5][function_call_id] then
 				function_call_id -= 1
 				error("Zap has more than 256 calls awaiting a response, and therefore this packet has been dropped")
 			end
 			alloc(1)
-			buffer.writeu8(outgoing_buff, outgoing_apos, 2)
+			buffer.writeu8(outgoing_buff, outgoing_apos, 5)
 			alloc(1)
 			buffer.writeu8(outgoing_buff, outgoing_apos, function_call_id)
 			local bool_8 = 0
 			local bool_8_pos_1 = alloc(1)
-			local len_9 = #Value["Key"]
+			local len_6 = #Value["Key"]
 			assert(utf8.len(Value["Key"]) ~= nil, "value is not valid utf-8")
 			alloc(2)
-			buffer.writeu16(outgoing_buff, outgoing_apos, len_9)
-			alloc(len_9)
-			buffer.writestring(outgoing_buff, outgoing_apos, Value["Key"], len_9)
+			buffer.writeu16(outgoing_buff, outgoing_apos, len_6)
+			alloc(len_6)
+			buffer.writestring(outgoing_buff, outgoing_apos, Value["Key"], len_6)
 			if Value["Value"] ~= nil then
 				bool_8 = bit32.bor(bool_8, 0b0000000000000001)
 				table.insert(outgoing_inst, Value["Value"])
 			end
 			buffer.writeu8(outgoing_buff, bool_8_pos_1, bool_8)
-			reliable_event_queue[8][function_call_id] = coroutine.running()
+			reliable_event_queue[5][function_call_id] = coroutine.running()
 			return coroutine.yield()
-		end,
-	},
-	DestroyEnemy = {
-		On = function(Callback: (Value: (string)) -> ())
-			table.insert(reliable_events[5], Callback)
-			for _, value in reliable_event_queue[5] do
-				task.spawn(Callback, value)
-			end
-			reliable_event_queue[5] = {}
-			return function()
-				table.remove(reliable_events[5], table.find(reliable_events[5], Callback))
-			end
 		end,
 	},
 	DataUpdated = {
@@ -533,69 +497,43 @@ local returns = {
 			end
 		end,
 	},
-	DamageEnemyClient = {
-		On = function(Callback: (Value: ({
-			["ID"]: (string),
-			["Damage"]: (number),
-			["CurrentHealth"]: (number),
-		})) -> ())
-			table.insert(reliable_events[6], Callback)
-			for _, value in reliable_event_queue[6] do
-				task.spawn(Callback, value)
-			end
-			reliable_event_queue[6] = {}
-			return function()
-				table.remove(reliable_events[6], table.find(reliable_events[6], Callback))
-			end
-		end,
-	},
-	DamageEnemy = {
-		Fire = function(Value: (string))
-			alloc(1)
-			buffer.writeu8(outgoing_buff, outgoing_apos, 0)
-			local len_10 = #Value
-			assert(utf8.len(Value) ~= nil, "value is not valid utf-8")
-			alloc(2)
-			buffer.writeu16(outgoing_buff, outgoing_apos, len_10)
-			alloc(len_10)
-			buffer.writestring(outgoing_buff, outgoing_apos, Value, len_10)
-		end,
-	},
-	CreateEnemy = {
-		On = function(Callback: (Value: ({
-			["Name"]: (string),
-			["ID"]: (string),
-		})) -> ())
-			table.insert(reliable_events[3], Callback)
-			for _, value in reliable_event_queue[3] do
-				task.spawn(Callback, value)
-			end
-			reliable_event_queue[3] = {}
-			return function()
-				table.remove(reliable_events[3], table.find(reliable_events[3], Callback))
-			end
-		end,
-	},
 	ChangeSetting = {
 		Call = function(Value: (string)): ((boolean))
 			function_call_id += 1
 			function_call_id %= 256
-			if reliable_event_queue[7][function_call_id] then
+			if reliable_event_queue[4][function_call_id] then
 				function_call_id -= 1
 				error("Zap has more than 256 calls awaiting a response, and therefore this packet has been dropped")
 			end
 			alloc(1)
-			buffer.writeu8(outgoing_buff, outgoing_apos, 1)
+			buffer.writeu8(outgoing_buff, outgoing_apos, 4)
 			alloc(1)
 			buffer.writeu8(outgoing_buff, outgoing_apos, function_call_id)
-			local len_11 = #Value
+			local len_7 = #Value
 			assert(utf8.len(Value) ~= nil, "value is not valid utf-8")
 			alloc(2)
-			buffer.writeu16(outgoing_buff, outgoing_apos, len_11)
-			alloc(len_11)
-			buffer.writestring(outgoing_buff, outgoing_apos, Value, len_11)
-			reliable_event_queue[7][function_call_id] = coroutine.running()
+			buffer.writeu16(outgoing_buff, outgoing_apos, len_7)
+			alloc(len_7)
+			buffer.writestring(outgoing_buff, outgoing_apos, Value, len_7)
+			reliable_event_queue[4][function_call_id] = coroutine.running()
 			return coroutine.yield()
+		end,
+	},
+	ChangeLobbySetting = {
+		Fire = function(Value: ({
+			["MaxPlayers"]: (number),
+			["Map"]: (string),
+		}))
+			alloc(1)
+			buffer.writeu8(outgoing_buff, outgoing_apos, 2)
+			alloc(1)
+			buffer.writeu8(outgoing_buff, outgoing_apos, Value["MaxPlayers"])
+			local len_8 = #Value["Map"]
+			assert(utf8.len(Value["Map"]) ~= nil, "value is not valid utf-8")
+			alloc(2)
+			buffer.writeu16(outgoing_buff, outgoing_apos, len_8)
+			alloc(len_8)
+			buffer.writestring(outgoing_buff, outgoing_apos, Value["Map"], len_8)
 		end,
 	},
 }

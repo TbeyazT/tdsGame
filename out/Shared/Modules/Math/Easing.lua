@@ -18,6 +18,10 @@ local function PI()
 	return math.pi
 end
 
+function Easing.linear(t)
+	return t
+end
+
 -- Basic Easing Functionsss
 function Easing.easeInQuad(t)
 	return t * t

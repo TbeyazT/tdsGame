@@ -9,17 +9,12 @@ debug.setmemorycategory(script.Name .. " Client")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--------------------------- Packages & Modules --------------------------
-local Packages = ReplicatedStorage:WaitForChild("Packages")
-local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Promise = require(game:GetService('ReplicatedStorage'):FindFirstChild('Packages'):FindFirstChild('Promise'))
+local Signal = require(game:GetService('ReplicatedStorage'):FindFirstChild('Packages'):FindFirstChild('Signal'))
 
-local Promise = require(Packages.Promise)
-local Signal = require(Packages.Signal)
-
--- Generated Zap Network module
-local Net = require(Shared.Net)
-
+local Net = require(script.Parent.Parent.Parent:FindFirstChild('Net'))
 -------------------------- Controller Definition --------------------------
+
 local ProfileClient = {
 	_data = nil,
 	_isLoaded = false,

@@ -12,10 +12,14 @@
           "@Classes": "src/Shared/Classes",
           "@Components": "src/Shared/Components",
           "@Modules": "src/Shared/Modules",
-          "@Pckgs": "Packages"
+          "@Pckgs": "Packages",
+          "@UI": "src/Shared/UI"
         }
       },
-      "target": "roblox"
+      "target": {
+        "name": "roblox",
+        "rojo_sourcemap": "sourcemap.json"
+      }
     }
   ]
 }

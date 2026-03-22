@@ -7,25 +7,25 @@
       "$ignoreUnknownInstances": true,
       "$path": "src/ReplicatedStorage",
       "Packages":  {
-			  "$path": "Packages"
-		  },
+          "$path": "Packages"
+      },
       "Shared": {
         "$className": "Folder",
         "$ignoreUnknownInstances": true,
-        "$path": "out/Shared"
+        "$path": "src/Shared"
       }
     },
     "ServerScriptService": {
       "$className": "ServerScriptService",
       "$ignoreUnknownInstances": true,
-      "$path": "out/ServerScriptService"
+      "$path": "src/ServerScriptService"
     },
     "StarterPlayer": {
       "$className": "StarterPlayer",
       "StarterPlayerScripts": {
         "$className": "StarterPlayerScripts",
         "$ignoreUnknownInstances": true,
-        "$path": "out/StarterPlayer/StarterPlayerScripts"
+        "$path": "src/StarterPlayer/StarterPlayerScripts"
       },
       "$ignoreUnknownInstances": true
     }

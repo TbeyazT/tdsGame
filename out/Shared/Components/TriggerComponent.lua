@@ -18,7 +18,7 @@ local runServiceConnection = nil
 
 function TriggerComponent.new(part: BasePart, touchType: string?)
 	pcall(function()
-		if not typeof(part) == "Instance" or not part:IsA("BasePart") then
+		if not (typeof(part) == "Instance") or not part:IsA("BasePart") then
 			warn("TriggerComponent requires a BasePart")
 		end
 	end)

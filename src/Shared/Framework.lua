@@ -5,6 +5,8 @@ local ServerScriptService = game:GetService("ServerScriptService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 
+local UIInit = require("@Shared/UI/Init")
+
 local Framework = {
 	_modules = {} :: { [string]: any },
 	_hasStarted = false,
@@ -30,6 +32,7 @@ function Framework.GetUtil(name:string):any
 			return require(utils)
 		end
 	end
+	return nil
 end
 
 function Framework.IsStarted(): boolean
@@ -79,8 +82,14 @@ function Framework.Boot(directories: {Instance})
 					end, debug.traceback)
 
 					if success and type(moduleData) == "table" then
+						local order = moduleData.LoadOrder or moduleData.loadOrder or 100
+						
 						Framework._modules[folder.Name] = moduleData
-						table.insert(modulesToLoad, { Name = folder.Name, Module = moduleData })
+						table.insert(modulesToLoad, { 
+							Name = folder.Name, 
+							Module = moduleData, 
+							Order = order 
+						})
 					else
 						warn(string.format("%s ❌ Require Error in '%s':\n%s", PREFIX, folder.Name, tostring(err or "Module did not return a table")))
 					end
@@ -88,6 +97,10 @@ function Framework.Boot(directories: {Instance})
 			end
 		end
 	end
+
+	table.sort(modulesToLoad, function(a, b)
+		return a.Order < b.Order
+	end)
 
 	for _, data in ipairs(modulesToLoad) do
 		local initFunc = data.Module.Init or data.Module.init
@@ -97,9 +110,9 @@ function Framework.Boot(directories: {Instance})
 			end, debug.traceback)
 			
 			if not success then 
-				warn(string.format("%s ❌ Init Error in %s:\n%s", PREFIX, data.Name, tostring(err)))
+				warn(string.format("%s ❌ Init Error in %s (Order: %d):\n%s", PREFIX, data.Name, data.Order, tostring(err)))
 			else 
-				print(PREFIX .. " ✅ Init successful in " .. data.Name) 
+				print(string.format("%s ✅ Init [%d]: %s", PREFIX, data.Order, data.Name)) 
 			end
 		end
 	end
@@ -109,15 +122,11 @@ function Framework.Boot(directories: {Instance})
 		if type(startFunc) == "function" then
 			task.spawn(function()
 				local success, err = xpcall(function() 
-					task.spawn(function() 
-						startFunc(data.Module) 
-					end)
+					startFunc(data.Module) 
 				end, debug.traceback)
 				
 				if not success then 
 					warn(string.format("%s ❌ Start Error in %s:\n%s", PREFIX, data.Name, tostring(err)))
-				else 
-					print(PREFIX .. " ✅ Start successful in " .. data.Name) 
 				end
 			end)
 		end
@@ -126,6 +135,10 @@ function Framework.Boot(directories: {Instance})
 	Framework._hasStarted = true
 	local elapsed = math.round((os.clock() - startTime) * 1000)
 	print(string.format("%s Boot complete: %d modules loaded (%dms)", PREFIX, #modulesToLoad, elapsed))
+	
+	if not IS_SERVER then
+		UIInit:Init()
+	end
 end
 
 return Framework
