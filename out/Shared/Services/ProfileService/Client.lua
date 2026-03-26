@@ -58,28 +58,23 @@ end
 
 -------------------------- Public API (Data Fetching) --------------------------
 
--- Checks if local player's data is loaded on the client
 function ProfileClient:IsLoaded(): boolean
 	return self._isLoaded
 end
 
--- Returns a Promise resolving with the value of the key.
 function ProfileClient:Get(key: string): "Promise"
 	return Promise.new(function(resolve, reject)
-		-- If data is already loaded, resolve instantly
 		if self._isLoaded then
 			resolve(self._data[key])
 			return
 		end
 
-		-- Otherwise, wait for the data to arrive from the server
 		local connection
 		connection = self._dataLoadedSignal:Connect(function()
 			connection:Disconnect()
 			resolve(self._data[key])
 		end)
 		
-		-- Optional 15s timeout
 		task.delay(15, function()
 			if connection.Connected then
 				connection:Disconnect()
@@ -89,24 +84,19 @@ function ProfileClient:Get(key: string): "Promise"
 	end)
 end
 
--- Observes a key and fires a callback on change (and immediately)
 function ProfileClient:Observe(key: string, callback: (any, any) -> ())
-	-- Make sure we have the Signal setup
 	if not self._changedSignals[key] then
 		self._changedSignals[key] = Signal.new()
 	end
 	
 	local connection = self._changedSignals[key]:Connect(callback)
 
-	-- Fire immediately if data is loaded, otherwise it will fire when DataLoaded occurs
 	if self._isLoaded and self._data[key] ~= nil then
 		task.spawn(callback, self._data[key], nil)
 	end
 
 	return connection
 end
-
--------------------------- Features (Network Bridges) --------------------------
 
 function ProfileClient:ChangeSetting(key: string): "Promise"
 	return Promise.new(function(resolve)
@@ -134,6 +124,19 @@ function ProfileClient:Rebirth(isSkipped: boolean): "Promise"
 	return Promise.new(function(resolve)
 		resolve(Net.Rebirth.Call(isSkipped))
 	end)
+end
+
+function ProfileClient:Mock(mockData)
+	self._data = mockData
+	self._isLoaded = true
+	
+	self._dataLoadedSignal:Fire()
+
+	for key, signal in pairs(self._changedSignals) do
+		if self._data[key] ~= nil then
+			signal:Fire(self._data[key], nil)
+		end
+	end
 end
 
 return ProfileClient

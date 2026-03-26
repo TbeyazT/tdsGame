@@ -27,6 +27,19 @@ event PlayAudio = {
     }
 }
 
+event Notify = {
+    from: Server,
+    type: Reliable,
+    call: ManyAsync,
+    data: struct {
+        Text: string.utf8,
+        Duration: f32,
+        TextColor: Color3?,
+        FrameScale: f32?,
+        UseRichAnimation: boolean?
+    }
+}
+
 funct ChangeSetting = {
     call: Async,
     args: string.utf8,
@@ -89,4 +102,16 @@ event StartLobby = {
     from: Client,
     type: Reliable,
     call: SingleAsync
+}
+
+funct EquipTower = {
+    call: Async,
+    args: string.utf8,
+    rets: boolean
+}
+
+funct UnequipTower = {
+    call: Async,
+    args: string.utf8,
+    rets: boolean
 }

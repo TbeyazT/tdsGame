@@ -20,7 +20,7 @@ local Net = require(ServerScriptService.Net)
 
 -------------------------- Constants --------------------------
 local STORE_NAME = "FullStarStudios"
-local STORE_VERSION = 2
+local STORE_VERSION = 3
 
 local DATA_TEMPLATE = {
 	Cash = 350,
@@ -28,7 +28,11 @@ local DATA_TEMPLATE = {
 	Daily = { Day = 1, LastClaimed = 0 }, 
 	CurrentBow = "Normal",
 	Towers = {},
+	EquippedTowers = {},
 	Badges = {},
+	Tutorial = {
+		Finished = false,
+	}
 }
 
 if RunService:IsStudio() then
